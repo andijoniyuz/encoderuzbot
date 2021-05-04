@@ -1,20 +1,20 @@
-from time import time
-from typing import Union
-
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from .config import MESSAGES, SECONDS, USERS, BANNED_USERS
-from functions.convertor_mp3 import convert_mp3
-
-def is_flood(uid: int) -> Union[bool, None]:
-
-    USERS[uid].append(time())
-    if len(list(filter(lambda x: time() - int(x) < SECONDS, USERS[uid]))) > MESSAGES:
-        USERS[uid] = list(filter(lambda x: time() - int(x) < SECONDS, USERS[uid]))
-        return True
+from functions import convertor_mp3, is_flood
+from config import BANNED_USERS
 
 
 @Client.on_message(filters.private & filters.audio)
-async def new_user(client: Client, message: Message):
-    await convert_mp3(message)
+async def new_user(_, message: Message):
+    if is_flood.is_flooder(message.from_user.id):
+        BANNED_USERS.add(message.from_user.id)
+        try:
+            await message.reply("Bitta musiqani 10 soniyada xajmini kichaytirishingiz mumkin.\nKuting...")
+        except:
+            pass
+    elif message.from_user.id in BANNED_USERS:
+        await convertor_mp3.convert_mp3(message)
+        BANNED_USERS.remove(message.from_user.id)
+    else:
+        await convertor_mp3.convert_mp3(message)
