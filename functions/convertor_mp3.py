@@ -34,4 +34,4 @@ async def convert_mp3(message):
             remove(new_mp3_file)
             remove(mp3_file)
         else:
-            print(stderr)
+           return False
